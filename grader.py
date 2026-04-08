@@ -24,16 +24,19 @@ def grade(history: List[Dict[str, Any]], task: Dict[str, Any]) -> float:
             if is_sensitive:
                 missed += 1.0
                 
-    # Normalizing score: (correct - penalty) / total_sensitive_tokens
-    # Total sensitive tokens can be computed from the task directly
+    # New Fair Scoring Logic:
+    # Base score is just the percentage of sensitive tokens you caught.
+    # We only subtract a small penalty (0.1 per token) for over-redaction.
+    
     total_sensitive = sum(1 for flag in task["sensitive"] if flag)
     
     if total_sensitive == 0:
-        # Prevent division by zero if there's a task with no sensitive data
-        return 1.0 if over == 0 else 0.0
+        return 1.0 if over == 0 else 0.5
         
-    raw_score = correct - missed - over
-    normalized = raw_score / total_sensitive
+    base_score = correct / total_sensitive
+    over_redaction_penalty = (over * 0.1) / total_sensitive
+    
+    final_score = base_score - over_redaction_penalty
     
     # Clip between 0 and 1
-    return max(0.0, min(1.0, normalized))
+    return max(0.0, min(1.0, final_score))
