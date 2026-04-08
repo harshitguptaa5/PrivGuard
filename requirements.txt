@@ -1,8 +1,9 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 google-generativeai
 numpy
 python-multipart
 jinja2
 openai
+openenv-core>=0.2.0

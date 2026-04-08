@@ -10,7 +10,8 @@ WORKDIR /app
 
 # Step 1: Install core dependencies for faster caching
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir --prefer-binary -r requirements.txt
 
 # Step 2: Copy all project files (including README.md required by pyproject.toml)
 COPY . .
