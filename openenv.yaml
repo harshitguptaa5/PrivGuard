@@ -1,0 +1,18 @@
+name: privacy-redaction-env
+description: AI agent redacts sensitive data from documents
+
+observation_space:
+  document: string
+  tokens: list
+  current_index: int
+
+action_space:
+  type: [redact, keep, replace]
+  token_index: int
+
+reward_range: [0.0, 1.0]
+
+tasks:
+  - easy
+  - medium
+  - hard
