@@ -27,11 +27,16 @@ training_rewards = []
 
 @app.post("/reset")
 async def reset_env(request: Request):
-    data = await request.json()
-    level = data.get("level", "medium")
+    try:
+        data = await request.json()
+    except:
+        data = {}
+    
+    level = data.get("level", env.level)
     env.level = level
     obs = env.reset()
     return obs.model_dump()
+
 
 @app.post("/step")
 async def step_env(request: Request):

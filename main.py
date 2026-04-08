@@ -1,5 +1,7 @@
 from environment import PrivacyEnv
 from agent import QLearningAgent
+from schemas import Action
+
 
 def test_q_learning():
     env = PrivacyEnv(level="medium")
@@ -15,17 +17,19 @@ def test_q_learning():
         ep_reward = 0.0
         
         while not done:
-            idx = obs["current_index"]
-            token = obs["tokens"][idx]
+            idx = obs.current_index
+            token = obs.tokens[idx]
             is_sensitive = env.sensitive_flags[idx]
             
-            action = agent.select_action(token, is_sensitive)
-            action["token_index"] = idx
+            action_dict = agent.select_action(token, is_sensitive)
+            action_dict["token_index"] = idx
             
+            action = Action(**action_dict)
             obs, reward, done, info = env.step(action)
             ep_reward += reward
             
-            agent.update(token, is_sensitive, action["type"], reward)
+            agent.update(token, is_sensitive, action.type, reward)
+
             
         agent.decay_epsilon()
         rewards_history.append(ep_reward)
