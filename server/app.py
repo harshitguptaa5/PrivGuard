@@ -35,12 +35,20 @@ async def health_check():
 
 @app.get("/")
 async def root_check():
-    # If frontend is not built, this provides a fallback
-    FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/dist")
+    # Get the project root (one level up from the server folder)
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    FRONTEND_DIR = os.path.abspath(os.path.join(base_dir, "frontend", "dist"))
     index_file = os.path.join(FRONTEND_DIR, "index.html")
+    
     if os.path.exists(index_file):
         return FileResponse(index_file)
-    return {"message": "AI Privacy Redaction API is running. Frontend not found.", "health": "/health"}
+    
+    return {
+        "message": "AI Privacy Redaction API is running.",
+        "frontend_path_probed": FRONTEND_DIR,
+        "frontend_exists": os.path.exists(FRONTEND_DIR),
+        "health": "/health"
+    }
 
 
 # Setup CORS
@@ -148,7 +156,9 @@ async def get_training_stats():
     return {"rewards": training_rewards}
 
 # Serve React App
-FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/dist")
+# Get the project root
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.abspath(os.path.join(base_dir, "frontend", "dist"))
 
 if os.path.exists(FRONTEND_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
