@@ -8,20 +8,23 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install uv using pip for maximum compatibility
+# Install uv using pip
 RUN pip install --no-cache-dir uv
 
-# Copy only the dependency files first
+# Copy configuration files
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies into the system environment
-# This avoids virtualenv issues in simple Docker environments
-RUN uv pip install --system --frozen -r pyproject.toml
+# Install dependencies using the correct uv sync command
+# --no-install-project is used because source code is not yet present
+RUN uv sync --frozen --no-install-project --no-dev
 
 # Copy source code
 COPY . .
 
-# Copy built frontend assets
+# Final sync to install the project itself (entry points)
+RUN uv sync --frozen --no-dev
+
+# Copy frontend assets
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 EXPOSE 7860
