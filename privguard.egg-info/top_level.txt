@@ -1,8 +1,8 @@
 agent
+app
 environment
 grader
 inference
 main
 schemas
-server
 tasks

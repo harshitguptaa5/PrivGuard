@@ -25,4 +25,4 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 EXPOSE 7860
 
 # Command to run the server
-CMD ["python", "server.py"]
+CMD ["python", "app.py"]

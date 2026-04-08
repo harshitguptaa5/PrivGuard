@@ -1,12 +1,12 @@
 README.md
 agent.py
+app.py
 environment.py
 grader.py
 inference.py
 main.py
 pyproject.toml
 schemas.py
-server.py
 tasks.py
 privguard.egg-info/PKG-INFO
 privguard.egg-info/SOURCES.txt
