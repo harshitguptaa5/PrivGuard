@@ -8,20 +8,20 @@ RUN npm run build
 FROM python:3.11
 WORKDIR /app
 
-# Copy dependency metadata
-COPY pyproject.toml ./
+# Step 1: Install core dependencies for faster caching
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies using standard pip (supports pyproject.toml natively)
-# We use '.' to install the current project and its dependencies
-RUN pip install --no-cache-dir .
-
-# Copy source code
+# Step 2: Copy all project files (including README.md required by pyproject.toml)
 COPY . .
 
-# Copy built frontend assets
+# Step 3: Formal installation of the project and any remaining dependencies
+RUN pip install --no-cache-dir .
+
+# Step 4: Copy built frontend assets
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 EXPOSE 7860
 
-# Starting the server
+# Command to run the server
 CMD ["python", "server.py"]
