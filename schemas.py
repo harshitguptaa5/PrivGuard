@@ -20,7 +20,7 @@ class StepInfo(BaseModel):
     token: str
     action: str
     is_sensitive: bool
-    final_score: Optional[float] = None
+    final_score: Optional[int] = None
 
 class StepResult(BaseModel):
     observation: Observation

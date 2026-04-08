@@ -24,19 +24,17 @@ def grade(history: List[Dict[str, Any]], task: Dict[str, Any]) -> float:
             if is_sensitive:
                 missed += 1.0
                 
-    # New Fair Scoring Logic:
-    # Base score is just the percentage of sensitive tokens you caught.
-    # We only subtract a small penalty (0.1 per token) for over-redaction.
+    # Strict Binary Scoring Logic:
+    # 1 if every sensitive token is caught AND there is no over-redaction.
+    # 0 otherwise.
     
     total_sensitive = sum(1 for flag in task["sensitive"] if flag)
     
     if total_sensitive == 0:
-        return 1.0 if over == 0 else 0.5
+        return 1 if over == 0 else 0
         
-    base_score = correct / total_sensitive
-    over_redaction_penalty = (over * 0.1) / total_sensitive
-    
-    final_score = base_score - over_redaction_penalty
-    
-    # Clip between 0 and 1
-    return max(0.0, min(1.0, final_score))
+    # Standard check: Did we catch everything without making mistakes?
+    if missed == 0 and over == 0:
+        return 1
+    else:
+        return 0
