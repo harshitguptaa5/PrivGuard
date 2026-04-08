@@ -31,4 +31,5 @@ privguard = "server:main"
 Homepage = "https://github.com/harshitguptaa5/PrivGuard"
 
 [tool.setuptools]
-packages = ["."]
+py-modules = ["agent", "environment", "grader", "inference", "main", "schemas", "server", "tasks"]
+
