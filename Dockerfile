@@ -8,26 +8,23 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install uv from the official image
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+# Install uv using pip for maximum compatibility
+RUN pip install --no-cache-dir uv
 
-# Copy configuration files
+# Copy only the dependency files first
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies ONLY first to leverage Docker cache
-# --no-install-project is vital because source code isn't copied yet
-RUN uv sync --frozen --no-dev --no-install-project
+# Install dependencies into the system environment
+# This avoids virtualenv issues in simple Docker environments
+RUN uv pip install --system --frozen -r pyproject.toml
 
 # Copy source code
 COPY . .
-
-# Now install the project itself (entry points, etc.)
-RUN uv sync --frozen --no-dev
 
 # Copy built frontend assets
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 EXPOSE 7860
 
-# Use the 'privguard' executable defined in [project.scripts]
-CMD ["uv", "run", "privguard"]
+# Directly run the server to ensure high reliability
+CMD ["python", "server.py"]
