@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "privguard"
+version = "0.1.0"
+description = "AI Privacy Redaction & Data Sharing Environment for OpenEnv"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Harshit Gupta"}
+]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "google-generativeai",
+    "numpy",
+    "python-multipart",
+    "jinja2",
+    "openai"
+]
+
+[project.urls]
+Homepage = "https://github.com/harshitguptaa5/PrivGuard"
+
+[tool.setuptools]
+packages = ["."]
