@@ -1,14 +1,19 @@
 import os
+import sys
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+import logging
+
+# Add project root to path for local imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from environment import PrivacyEnv
 from agent import QLearningAgent
 from schemas import Action
-import logging
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +36,7 @@ async def health_check():
 @app.get("/")
 async def root_check():
     # If frontend is not built, this provides a fallback
-    FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend/dist")
+    FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/dist")
     index_file = os.path.join(FRONTEND_DIR, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
@@ -143,7 +148,7 @@ async def get_training_stats():
     return {"rewards": training_rewards}
 
 # Serve React App
-FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend/dist")
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend/dist")
 
 if os.path.exists(FRONTEND_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
@@ -156,7 +161,7 @@ if os.path.exists(FRONTEND_DIR):
         return {"msg": "Frontend not built yet! Run 'npm run build' in frontend directory."}
 
 def main():
-    uvicorn.run("server:app", host="0.0.0.0", port=7860, reload=False)
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860, reload=False)
 
 if __name__ == "__main__":
     main()

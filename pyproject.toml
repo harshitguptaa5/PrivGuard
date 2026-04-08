@@ -25,12 +25,13 @@ dependencies = [
 ]
 
 [project.scripts]
-privguard = "app:main"
-server = "app:main"
+privguard = "server.app:main"
+server = "server.app:main"
 
 [project.urls]
 Homepage = "https://github.com/harshitguptaa5/PrivGuard"
 
 [tool.setuptools]
-py-modules = ["agent", "environment", "grader", "inference", "main", "schemas", "app", "tasks"]
+packages = ["server"]
+py-modules = ["agent", "environment", "grader", "inference", "main", "schemas", "tasks"]
 
