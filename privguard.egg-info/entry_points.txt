@@ -1,3 +1,0 @@
-[console_scripts]
-privguard = server.app:main
-server = server.app:main
