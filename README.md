@@ -1,3 +1,12 @@
+---
+title: AI Privacy Environment
+emoji: 🛡️
+colorFrom: indigo
+colorTo: cyan
+sdk: docker
+app_port: 7860
+---
+
 # AI Privacy Redaction & Data Sharing Environment
 
 A fully containerized **OpenEnv** compliant environment designed to simulate real-world data cleaning and privacy mitigation tasks.
