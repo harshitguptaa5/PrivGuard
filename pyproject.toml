@@ -7,7 +7,7 @@ name = "privguard"
 version = "0.1.0"
 description = "AI Privacy Redaction & Data Sharing Environment for OpenEnv"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "Harshit Gupta"}
@@ -20,8 +20,12 @@ dependencies = [
     "numpy",
     "python-multipart",
     "jinja2",
-    "openai"
+    "openai",
+    "openenv-core>=0.2.0"
 ]
+
+[project.scripts]
+privguard = "server:main"
 
 [project.urls]
 Homepage = "https://github.com/harshitguptaa5/PrivGuard"
