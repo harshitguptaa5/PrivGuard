@@ -8,8 +8,35 @@ from fastapi.responses import FileResponse
 from environment import PrivacyEnv
 from agent import QLearningAgent
 from schemas import Action
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="AI Privacy Redaction API")
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global exception caught: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error": str(exc)},
+    )
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "version": "1.0.0"}
+
+@app.get("/")
+async def root_check():
+    # If frontend is not built, this provides a fallback
+    FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend/dist")
+    index_file = os.path.join(FRONTEND_DIR, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return {"message": "AI Privacy Redaction API is running. Frontend not found.", "health": "/health"}
+
 
 # Setup CORS
 app.add_middleware(
@@ -40,9 +67,14 @@ async def reset_env(request: Request):
 
 @app.post("/step")
 async def step_env(request: Request):
-    action_data = await request.json()
+    try:
+        action_data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Malformed JSON")
+
     if "type" not in action_data or "token_index" not in action_data:
         raise HTTPException(status_code=400, detail="Invalid action format")
+
     
     action = Action(**action_data)
     obs, reward, done, info = env.step(action)
