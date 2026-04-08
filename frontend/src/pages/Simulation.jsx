@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Play, RotateCcw, StepForward, Loader2 } from 'lucide-react';
+import { Play, RotateCcw, StepForward, Loader2, BrainCircuit } from 'lucide-react';
 
 const API_BASE = "";
 
@@ -10,6 +10,8 @@ export default function Simulation() {
   const [running, setRunning] = useState(false);
   const [finalScore, setFinalScore] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [smartAgent, setSmartAgent] = useState(false);
+  const [history, setHistory] = useState([]);
 
   const resetEnv = async () => {
     setLoading(true);
@@ -24,6 +26,7 @@ export default function Simulation() {
       setReward(0);
       setFinalScore(null);
       setRunning(false);
+      setHistory([]);
     } catch (e) { console.error(e); }
     setLoading(false);
   };
@@ -36,14 +39,34 @@ export default function Simulation() {
       const idx = currentObs.current_index;
       const token = currentObs.tokens[idx];
       
-      const isEmailOrPhone = token.includes("@") || /\d{3}-\d{4}/.test(token) || token.includes("gmail") || token.includes("zero");
-      const actionType = isEmailOrPhone ? "redact" : "keep";
+      let actionType = "keep";
+      let replacement = null;
+
+      if (smartAgent) {
+          try {
+              const res = await fetch(`${API_BASE}agent/act`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(currentObs)
+              });
+              const aiAction = await res.json();
+              actionType = aiAction.type;
+              replacement = aiAction.replacement;
+          } catch (e) {
+              console.error("AI Agent failed, falling back to rules", e);
+              const isEmailOrPhone = token.includes("@") || /\d{3}-\d{4}/.test(token) || token.includes("gmail") || token.includes("zero");
+              actionType = isEmailOrPhone ? "redact" : "keep";
+          }
+      } else {
+          const isEmailOrPhone = token.includes("@") || /\d{3}-\d{4}/.test(token) || token.includes("gmail") || token.includes("zero");
+          actionType = isEmailOrPhone ? "redact" : "keep";
+      }
 
       try {
           const res = await fetch(`${API_BASE}step`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ type: actionType, token_index: idx, replacement: null })
+              body: JSON.stringify({ type: actionType, token_index: idx, replacement: replacement })
           });
           const data = await res.json();
           const newObs = data.observation;
@@ -52,6 +75,12 @@ export default function Simulation() {
           
           setObs(newObs);
           setReward(newReward);
+          setHistory(prev => [...prev, {
+              token: token,
+              action: actionType,
+              ground_truth: data.info.is_sensitive ? "Sensitive" : "Safe",
+              reward: data.reward
+          }]);
           
           if (done && data.final_score !== undefined) {
               setFinalScore(data.final_score);
@@ -106,6 +135,13 @@ export default function Simulation() {
             <option value="medium">Medium</option>
             <option value="hard">Hard</option>
           </select>
+          <button 
+            className={`btn ${smartAgent ? 'btn-success' : ''}`} 
+            onClick={() => setSmartAgent(!smartAgent)}
+            style={{ marginRight: '1rem', background: smartAgent ? 'var(--success)' : 'transparent', border: '1px solid var(--success)' }}
+          >
+            <BrainCircuit size={16} /> {smartAgent ? 'Smart AI: ON' : 'Smart AI: OFF'}
+          </button>
           <button className="btn" onClick={nextStep} disabled={running || (obs && obs.current_index >= obs.tokens.length)}>
             <StepForward size={16} /> Next Step
           </button>
@@ -153,8 +189,8 @@ export default function Simulation() {
           // Since our endpoint doesn't return the history yet, we'll rely on local heuristic for display
           // Actually, let's update environment to return redacted string. I'll fix this visually.
           if (i < obs.current_index) {
-              const isEmailOrPhone = token.includes("@") || /\d{3}-\d{4}/.test(token) || token.includes("gmail") || token.includes("zero");
-              if (isEmailOrPhone) {
+              const step = history[i];
+              if (step && (step.action === "redact" || step.action === "replace")) {
                   className += "redacted ";
                   displayToken = "[██████]";
               }
@@ -172,6 +208,41 @@ export default function Simulation() {
         <h4>Active Policy:</h4>
         <p style={{ color: 'var(--danger)' }}>Redact: {obs.policy.redact.join(', ')}</p>
         <p style={{ color: 'var(--success)' }}>Preserve: {obs.policy.preserve.join(', ')}</p>
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+          <h3>Decision Log & Explainability</h3>
+          <div className="glass-panel" style={{ maxHeight: '300px', overflowY: 'auto', padding: '0' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead style={{ position: 'sticky', top: 0, background: 'var(--panel-bg)', zIndex: 1 }}>
+                      <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--secondary-color)' }}>
+                          <th style={{ padding: '1rem' }}>Token</th>
+                          <th style={{ padding: '1rem' }}>Action</th>
+                          <th style={{ padding: '1rem' }}>Ground Truth</th>
+                          <th style={{ padding: '1rem' }}>Reward</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {history.map((h, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                              <td style={{ padding: '1rem' }}><strong>{h.token}</strong></td>
+                              <td style={{ padding: '1rem' }}>
+                                  <span style={{ color: h.action === 'keep' ? 'var(--success)' : 'var(--danger)' }}>{h.action}</span>
+                              </td>
+                              <td style={{ padding: '1rem' }}>{h.ground_truth}</td>
+                              <td style={{ padding: '1rem' }}>
+                                  <span style={{ color: h.reward > 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                      {h.reward > 0 ? '+' : ''}{h.reward.toFixed(2)}
+                                  </span>
+                              </td>
+                          </tr>
+                      ))}
+                      {history.length === 0 && (
+                          <tr><td colSpan="4" style={{ padding: '2rem', textAlign: 'center', opacity: 0.5 }}>No steps taken yet. Run simulation to see logs.</td></tr>
+                      )}
+                  </tbody>
+              </table>
+          </div>
       </div>
     </div>
   );

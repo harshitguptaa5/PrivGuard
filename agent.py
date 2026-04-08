@@ -1,3 +1,4 @@
+import os
 import json
 import random
 import numpy as np
@@ -47,21 +48,37 @@ class QLearningAgent:
 
 
 class GeminiAgent:
-    def __init__(self, api_key: str):
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-1.5-pro-latest")
+    def __init__(self):
+        self.api_key = os.getenv("GOOGLE_API_KEY")
+        self.enabled = bool(self.api_key)
+        if self.enabled:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel("gemini-1.5-pro-latest")
 
     def select_action(self, obs: Dict[str, Any]) -> Dict[str, Any]:
-        prompt = f"""
-You are a privacy redaction agent.
-Observation: {json.dumps(obs)}
+        if not self.enabled:
+            return {"type": "keep", "token_index": obs["current_index"], "replacement": None}
 
-Based on the policy, decide the action for the token at current_index.
-Output strictly in JSON format matching this schema without any markdown blocks or backticks if possible:
+        # Context-aware prompt
+        prompt = f"""
+You are an expert AI Data Privacy Agent. Your task is to redact PII (Personally Identifiable Information) based on a specific policy.
+
+CURRENT CONTEXT:
+Document: {obs['document']}
+Target Token: "{obs['tokens'][obs['current_index']]}" at index {obs['current_index']}
+Policy: {json.dumps(obs['policy'])}
+
+TASK:
+Decide if the target token should be kept, redacted, or replaced.
+If the token is part of a name, email, or phone number that the policy says to redact, use "redact".
+Even if the token is an obfuscated word (like 'at' in 'john at gmail'), redact it if it forms a sensitive entity.
+
+OUTPUT:
+Strict JSON format:
 {{
   "type": "redact" | "keep" | "replace",
   "token_index": {obs['current_index']},
-  "replacement": string | null
+  "replacement": "[REDACTED]" or null
 }}
 """
         try:
@@ -72,12 +89,8 @@ Output strictly in JSON format matching this schema without any markdown blocks 
                 )
             )
             data = json.loads(response.text)
-            # Ensure valid index
             data["token_index"] = obs["current_index"]
-            if data["type"] not in ["redact", "keep", "replace"]:
-                data["type"] = "keep"
             return data
         except Exception as e:
-            # Fallback if invalid
-            print("Gemini Agent JSON Parse Error:", e)
+            print(f"Gemini Agent Error: {e}")
             return {"type": "keep", "token_index": obs["current_index"], "replacement": None}
