@@ -5,29 +5,33 @@ RUN npm install
 COPY frontend/ ./
 RUN npm run build
 
-FROM python:3.11-slim
+# Using full python image (not slim) to ensure all build-time dependencies are met
+FROM python:3.11
 WORKDIR /app
 
-# Install uv using pip
-RUN pip install --no-cache-dir uv
+# Official uv installation method
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-# Copy configuration files
+# Verify uv installation
+RUN uv --version
+
+# Copy dependency files
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies using the correct uv sync command
-# --no-install-project is used because source code is not yet present
-RUN uv sync --frozen --no-install-project --no-dev
+# Install dependencies using uv
+# Using --system to install directly into the container's python environment
+RUN uv sync --frozen --no-install-project --no-dev --system
 
 # Copy source code
 COPY . .
 
-# Final sync to install the project itself (entry points)
-RUN uv sync --frozen --no-dev
+# Final sync to install the project itself
+RUN uv sync --frozen --no-dev --system
 
 # Copy frontend assets
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 EXPOSE 7860
 
-# Directly run the server to ensure high reliability
+# Starting the server
 CMD ["python", "server.py"]
