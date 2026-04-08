@@ -35,9 +35,14 @@ async def health_check():
 
 @app.get("/")
 async def root_check():
-    # Get the project root (one level up from the server folder)
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    FRONTEND_DIR = os.path.abspath(os.path.join(base_dir, "frontend", "dist"))
+    # Primary: Absolute container path for Hugging Face
+    FRONTEND_DIR = "/app/frontend/dist"
+    
+    # Fallback: Relative path for local development
+    if not os.path.exists(FRONTEND_DIR):
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        FRONTEND_DIR = os.path.abspath(os.path.join(base_dir, "frontend", "dist"))
+        
     index_file = os.path.join(FRONTEND_DIR, "index.html")
     
     if os.path.exists(index_file):
@@ -45,7 +50,7 @@ async def root_check():
     
     return {
         "message": "AI Privacy Redaction API is running.",
-        "frontend_path_probed": FRONTEND_DIR,
+        "probed_path": FRONTEND_DIR,
         "frontend_exists": os.path.exists(FRONTEND_DIR),
         "health": "/health"
     }
@@ -156,9 +161,13 @@ async def get_training_stats():
     return {"rewards": training_rewards}
 
 # Serve React App
-# Get the project root
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FRONTEND_DIR = os.path.abspath(os.path.join(base_dir, "frontend", "dist"))
+# Primary: Absolute container path
+FRONTEND_DIR = "/app/frontend/dist"
+
+# Fallback: Relative path for local development
+if not os.path.exists(FRONTEND_DIR):
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    FRONTEND_DIR = os.path.abspath(os.path.join(base_dir, "frontend", "dist"))
 
 if os.path.exists(FRONTEND_DIR):
     app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
