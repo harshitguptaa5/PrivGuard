@@ -12,7 +12,7 @@ import logging
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from environment import PrivacyEnv
-from agent import QLearningAgent, GeminiAgent
+from agent import QLearningAgent, GeminiAgent, ContextAgent
 from schemas import Action
 
 # Configure logging
@@ -69,6 +69,7 @@ app.add_middleware(
 env = PrivacyEnv(level="medium")
 q_agent = QLearningAgent()
 gemini_agent = GeminiAgent()
+context_agent = ContextAgent()
 training_rewards = []
 
 @app.post("/reset")
@@ -112,14 +113,17 @@ async def step_env(request: Request):
 @app.post("/agent/act")
 async def agent_act(request: Request):
     obs_data = await request.json()
-    # The frontend just sends the current state
-    if not gemini_agent.enabled:
-        return JSONResponse(
-            status_code=400,
-            content={"detail": "Gemini AI Agent is not enabled. Please set GOOGLE_API_KEY."}
-        )
     
-    action_dict = gemini_agent.select_action(obs_data)
+    # Priority 1: Gemini AI if enabled
+    if gemini_agent.enabled:
+        try:
+            action_dict = gemini_agent.select_action(obs_data)
+            return action_dict
+        except Exception as e:
+            logger.error(f"Gemini failed, falling back: {e}")
+
+    # Priority 2: Contextual Hyper-Agent (Built-in Intelligence)
+    action_dict = context_agent.select_action(obs_data)
     return action_dict
 
 @app.get("/state")
