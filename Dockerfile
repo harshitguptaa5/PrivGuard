@@ -14,12 +14,15 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 # Copy configuration files
 COPY pyproject.toml uv.lock ./
 
-# Install dependencies into a virtual environment
-# We use --frozen to ensure parity with the local uv.lock
-RUN uv sync --frozen --no-dev
+# Install dependencies ONLY first to leverage Docker cache
+# --no-install-project is vital because source code isn't copied yet
+RUN uv sync --frozen --no-dev --no-install-project
 
 # Copy source code
 COPY . .
+
+# Now install the project itself (entry points, etc.)
+RUN uv sync --frozen --no-dev
 
 # Copy built frontend assets
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
@@ -27,5 +30,4 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 EXPOSE 7860
 
 # Use the 'privguard' executable defined in [project.scripts]
-# uv run ensures the virtual environment is used
 CMD ["uv", "run", "privguard"]
