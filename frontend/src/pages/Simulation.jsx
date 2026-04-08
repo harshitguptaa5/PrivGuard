@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Play, RotateCcw, StepForward, Loader2 } from 'lucide-react';
 
-const API_BASE = "http://localhost:7860";
+const API_BASE = "";
 
 export default function Simulation() {
   const [obs, setObs] = useState(null);

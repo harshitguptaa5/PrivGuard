@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { EyeOff, Eye, Replace, RotateCcw } from 'lucide-react';
 
-const API_BASE = "http://localhost:7860";
+const API_BASE = "";
 
 export default function ManualMode() {
   const [obs, setObs] = useState(null);

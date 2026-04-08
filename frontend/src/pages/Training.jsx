@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Play } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const API_BASE = "http://localhost:7860";
+const API_BASE = "";
 
 export default function Training() {
   const [data, setData] = useState([]);
