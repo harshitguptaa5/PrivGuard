@@ -13,7 +13,7 @@ export default function Training() {
     setTraining(true);
     setData([]);
     try {
-      const res = await fetch(`${API_BASE}/train`, {
+      const res = await fetch(`${API_BASE}train`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ episodes: 100, level })

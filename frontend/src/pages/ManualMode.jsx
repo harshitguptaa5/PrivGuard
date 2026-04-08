@@ -12,7 +12,7 @@ export default function ManualMode() {
 
   const resetEnv = async () => {
     try {
-      const res = await fetch(`${API_BASE}/reset`, {
+      const res = await fetch(`${API_BASE}reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level })
@@ -30,7 +30,7 @@ export default function ManualMode() {
   const takeAction = async (type) => {
     if (!obs || obs.current_index >= obs.tokens.length) return;
     try {
-      const res = await fetch(`${API_BASE}/step`, {
+      const res = await fetch(`${API_BASE}step`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

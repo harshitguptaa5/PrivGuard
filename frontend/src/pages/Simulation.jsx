@@ -14,7 +14,7 @@ export default function Simulation() {
   const resetEnv = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/reset`, {
+      const res = await fetch(`${API_BASE}reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ level })
@@ -40,7 +40,7 @@ export default function Simulation() {
       const actionType = isEmailOrPhone ? "redact" : "keep";
 
       try {
-          const res = await fetch(`${API_BASE}/step`, {
+          const res = await fetch(`${API_BASE}step`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ type: actionType, token_index: idx, replacement: null })
