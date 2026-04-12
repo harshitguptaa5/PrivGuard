@@ -203,3 +203,148 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+/* ── Difficulty Guide ─────────────────────────────── */
+.difficulty-guide {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.diff-card {
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.diff-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0.08;
+  z-index: 0;
+}
+
+.diff-card > * { position: relative; z-index: 1; }
+
+.diff-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* --- Easy --- */
+.diff-card.easy {
+  background: rgba(102, 252, 241, 0.07);
+  border-color: rgba(102, 252, 241, 0.25);
+}
+.diff-card.easy::before { background: #66fcf1; }
+.diff-card.easy .diff-badge {
+  background: rgba(102, 252, 241, 0.15);
+  color: #66fcf1;
+  border: 1px solid rgba(102, 252, 241, 0.4);
+}
+.diff-card.easy h4 { color: #66fcf1; }
+
+/* --- Medium --- */
+.diff-card.medium {
+  background: rgba(255, 224, 102, 0.07);
+  border-color: rgba(255, 224, 102, 0.25);
+}
+.diff-card.medium::before { background: #ffe066; }
+.diff-card.medium .diff-badge {
+  background: rgba(255, 224, 102, 0.15);
+  color: #ffe066;
+  border: 1px solid rgba(255, 224, 102, 0.4);
+}
+.diff-card.medium h4 { color: #ffe066; }
+
+/* --- Hard --- */
+.diff-card.hard {
+  background: rgba(242, 95, 92, 0.07);
+  border-color: rgba(242, 95, 92, 0.25);
+}
+.diff-card.hard::before { background: #f25f5c; }
+.diff-card.hard .diff-badge {
+  background: rgba(242, 95, 92, 0.15);
+  color: #f25f5c;
+  border: 1px solid rgba(242, 95, 92, 0.4);
+}
+.diff-card.hard h4 { color: #f25f5c; }
+
+.diff-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  margin-bottom: 0.85rem;
+}
+
+.diff-card h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.diff-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.diff-card ul li {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.5;
+}
+
+.diff-card ul li::before {
+  content: '›';
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+.diff-card.easy   ul li::before { color: #66fcf1; }
+.diff-card.medium ul li::before { color: #ffe066; }
+.diff-card.hard   ul li::before { color: #f25f5c; }
+
+.diff-guide-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.diff-guide-heading::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--primary-color);
+  border-radius: 2px;
+}
+
+/* Active highlight — selected difficulty card */
+.diff-card.easy.diff-card--active   { border-color: rgba(102,252,241,0.7); box-shadow: 0 0 18px rgba(102,252,241,0.18); }
+.diff-card.medium.diff-card--active { border-color: rgba(255,224,102,0.7); box-shadow: 0 0 18px rgba(255,224,102,0.18); }
+.diff-card.hard.diff-card--active   { border-color: rgba(242, 95, 92,0.7); box-shadow: 0 0 18px rgba(242, 95, 92,0.18); }

@@ -1,5 +1,4 @@
-import json
-import re
+import random
 from typing import List, Dict, Any, Tuple
 
 from tasks import TASKS
@@ -10,11 +9,11 @@ class PrivacyEnv:
     def __init__(self, level: str = "easy"):
         self.level = level
         self.documents = TASKS
-        self.current_doc_idx = 0
+        self.current_task = {}
+        self.current_index = 0
         self.tokens = []
         self.sensitive_flags = []
         self.policy = {}
-        self.current_index = 0
         self.max_steps = 0
         self.document = ""
         self.redacted_tokens = []
@@ -22,11 +21,15 @@ class PrivacyEnv:
         self._load_document()
 
     def _load_document(self):
-        doc = self.documents.get(self.level, self.documents["easy"])
-        self.document = doc["text"]
-        self.tokens = doc["tokens"].copy()
-        self.sensitive_flags = doc["sensitive"].copy()
-        self.policy = doc["policy"].copy()
+        # Pick a random task from the list of tasks for the current level
+        task_list = self.documents.get(self.level, self.documents["easy"])
+        self.current_task = random.choice(task_list)
+        
+        self.document = self.current_task["text"]
+        self.tokens = self.current_task["tokens"].copy()
+        self.sensitive_flags = self.current_task["sensitive"].copy()
+        self.policy = self.current_task["policy"].copy()
+        
         self.current_index = 0
         self.max_steps = len(self.tokens)
         self.redacted_tokens = [None] * len(self.tokens)
@@ -87,7 +90,7 @@ class PrivacyEnv:
         
         final_sc = None
         if done:
-            final_sc = grade(self.history, self.documents.get(self.level, self.documents["easy"]))
+            final_sc = grade(self.history, self.current_task)
             
         info = StepInfo(
             token=self.tokens[idx],
